@@ -22,7 +22,7 @@ use RyanChandler\FilamentNavigation\Models\Navigation;
 
 class NavigationResource extends Resource
 {
-    protected static ?string $navigationIcon = 'heroicon-o-bars-3';
+    protected static string | \BackedEnum | null $navigationIcon  = 'heroicon-o-bars-3';
 
     protected static bool $showTimestamps = true;
 
