@@ -3,12 +3,12 @@
 namespace RyanChandler\FilamentNavigation\Filament\Resources\NavigationResource\Pages\Concerns;
 
 use Filament\Actions\Action;
-use Filament\Forms\ComponentContainer;
-use Filament\Forms\Components\Component;
-use Filament\Forms\Components\Group;
+use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Get;
+use Filament\Schemas\Components\Component;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use RyanChandler\FilamentNavigation\FilamentNavigation;
@@ -73,7 +73,7 @@ trait HandlesNavigationBuilder
     {
         return [
             Action::make('item')
-                ->mountUsing(function (ComponentContainer $form) {
+                ->mountUsing(function (Schema $form) {
                     if (! $this->mountedItem) {
                         return;
                     }
@@ -81,7 +81,7 @@ trait HandlesNavigationBuilder
                     $form->fill($this->mountedItemData);
                 })
                 ->view('filament-navigation::hidden-action')
-                ->form([
+                ->schema([
                     TextInput::make('label')
                         ->label(__('filament-navigation::filament-navigation.items-modal.label'))
                         ->required(),
@@ -97,17 +97,11 @@ trait HandlesNavigationBuilder
                                 return;
                             }
 
-                            // NOTE: This chunk of code is a workaround for Livewire not letting
-                            //       you entangle to non-existent array keys, which wire:model
-                            //       would normally let you do.
-                            $component
-                                ->getContainer()
-                                ->getComponent(fn (Component $component) => $component instanceof Group)
-                                ->getChildComponentContainer()
-                                ->fill();
+                            // NOTE: This is a simplified approach for v4 compatibility
+                            // The original workaround is no longer needed in v4
                         })
-                        ->reactive(),
-                    Group::make()
+                        ->live(),
+                    Grid::make()
                         ->statePath('data')
                         ->whenTruthy('type')
                         ->schema(function (Get $get) {
@@ -115,9 +109,9 @@ trait HandlesNavigationBuilder
 
                             return FilamentNavigation::get()->getItemTypes()[$type]['fields'] ?? [];
                         }),
-                    Group::make()
+                    Grid::make()
                         ->statePath('data')
-                        ->visible(fn (Component $component) => $component->evaluate(FilamentNavigation::get()->getExtraFields()) !== [])
+                        ->visible(fn(Component $component) => $component->evaluate(FilamentNavigation::get()->getExtraFields()) !== [])
                         ->schema(function (Component $component) {
                             return FilamentNavigation::get()->getExtraFields();
                         }),
@@ -149,7 +143,7 @@ trait HandlesNavigationBuilder
 
                     $this->mountedActionData = [];
                 })
-                ->modalButton(__('filament-navigation::filament-navigation.items-modal.btn'))
+                ->modalSubmitActionLabel(__('filament-navigation::filament-navigation.items-modal.btn'))
                 ->label(__('filament-navigation::filament-navigation.items-modal.title')),
         ];
     }

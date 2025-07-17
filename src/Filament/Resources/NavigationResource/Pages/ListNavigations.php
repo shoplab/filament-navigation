@@ -13,7 +13,7 @@ class ListNavigations extends ListRecords
         return FilamentNavigation::get()->getResource();
     }
 
-    protected function getActions(): array
+    protected function getHeaderActions(): array
     {
         return [
             CreateAction::make('create'),

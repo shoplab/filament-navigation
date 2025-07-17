@@ -19,6 +19,7 @@ use Livewire\LivewireServiceProvider;
 use Orchestra\Testbench\TestCase as Orchestra;
 use RyanChandler\BladeCaptureDirective\BladeCaptureDirectiveServiceProvider;
 use RyanChandler\FilamentNavigation\FilamentNavigationServiceProvider;
+use RyanChandler\FilamentNavigation\Tests\AdminPanelProvider;
 
 class TestCase extends Orchestra
 {

@@ -2,17 +2,18 @@
 
 namespace RyanChandler\FilamentNavigation\Filament\Resources;
 
-use Filament\Forms\Components\Group;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\View;
-use Filament\Forms\Components\ViewField;
-use Filament\Forms\Form;
-use Filament\Forms\Set;
+use Filament\Schemas\Components\View;
+use Illuminate\Contracts\View\View as ViewContract;
+use Filament\Forms\Components\Field;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
-use Filament\Tables\Actions\DeleteAction;
-use Filament\Tables\Actions\EditAction;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
@@ -37,15 +38,14 @@ class NavigationResource extends Resource
         static::$showTimestamps = ! $condition;
     }
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
+        return $schema
+            ->components([
                 Section::make('')->schema([
                     TextInput::make('name')
                         ->label(__('filament-navigation::filament-navigation.attributes.name'))
-                        ->reactive()
-                        ->debounce()
+                        ->live(debounce: 500)
                         ->afterStateUpdated(function (?string $state, Set $set, string $context) {
                             if (! $state) {
                                 return;
@@ -56,7 +56,7 @@ class NavigationResource extends Resource
                             }
                         })
                         ->required(),
-                    ViewField::make('items')
+                    Field::make('items')
                         ->label(__('filament-navigation::filament-navigation.attributes.items'))
                         ->default([])
                         ->view('filament-navigation::navigation-builder'),
@@ -65,7 +65,7 @@ class NavigationResource extends Resource
                         12,
                         'lg' => 8,
                     ]),
-                Group::make([
+                Grid::make([
                     Section::make('')->schema([
                         TextInput::make('handle')
                             ->label(__('filament-navigation::filament-navigation.attributes.handle'))
@@ -73,14 +73,14 @@ class NavigationResource extends Resource
                             ->unique(column: 'handle', ignoreRecord: true),
                         View::make('filament-navigation::card-divider')
                             ->visible(static::$showTimestamps),
-                        Placeholder::make('created_at')
+                        TextEntry::make('created_at')
                             ->label(__('filament-navigation::filament-navigation.attributes.created_at'))
                             ->visible(static::$showTimestamps)
-                            ->content(fn (?Navigation $record) => $record ? $record->created_at->translatedFormat(Table::$defaultDateTimeDisplayFormat) : new HtmlString('&mdash;')),
-                        Placeholder::make('updated_at')
+                            ->formatStateUsing(fn(?Navigation $record) => $record ? $record->created_at->translatedFormat('M j, Y H:i') : new HtmlString('&mdash;')),
+                        TextEntry::make('updated_at')
                             ->label(__('filament-navigation::filament-navigation.attributes.updated_at'))
                             ->visible(static::$showTimestamps)
-                            ->content(fn (?Navigation $record) => $record ? $record->updated_at->translatedFormat(Table::$defaultDateTimeDisplayFormat) : new HtmlString('&mdash;')),
+                            ->formatStateUsing(fn(?Navigation $record) => $record ? $record->updated_at->translatedFormat('M j, Y H:i') : new HtmlString('&mdash;')),
                     ]),
                 ])
                     ->columnSpan([
@@ -140,15 +140,13 @@ class NavigationResource extends Resource
                     ->dateTime()
                     ->sortable(),
             ])
-            ->actions([
+            ->recordActions([
                 EditAction::make()
                     ->icon(null),
                 DeleteAction::make()
                     ->icon(null),
             ])
-            ->filters([
-
-            ]);
+            ->filters([]);
     }
 
     public static function getPages(): array
